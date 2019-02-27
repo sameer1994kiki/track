@@ -1,0 +1,387 @@
+
+import React, {Component} from 'react';
+import {render} from 'react-dom';
+import PropTypes from 'prop-types';
+import styled, { css } from 'styled-components';
+import 'whatwg-fetch';
+import md5 from "blueimp-md5"
+import { getCookie} from '@/utils/public';
+import Server from '@/utils/server';
+import MobileDetect from 'mobile-detect';
+require("babel-polyfill");
+
+
+
+const TrackTag = styled.div ``;
+let trackData,startClientX,startClientY,minRange,trackSign,trackDataLength;
+minRange=30;
+trackDataLength=6;// 条数较大会报错500,比如10条时
+
+function TrackCollector(WrappedComponent) {
+
+    class Track extends Component {
+
+        constructor(props) {
+            super();
+            this.state = {};
+            this.myRef = React.createRef();
+        }
+
+        componentDidMount() {
+            const type=this.props['data-type'];
+            if(type==='view'){
+                const name=this.props['data-name'];
+                let extra={};
+                Object.keys(this.props).forEach((keys) => {
+                    if (keys.indexOf("data-") > -1) {
+                        if( !['data-type','data-name'].includes(keys) ){
+                            const name =  keys.replace('data-','');
+                            extra = Object.assign(extra,{[name]:this.props[keys]})
+                        }
+                    }
+                })
+                // 这里延时执行是为了等待html中的trackPathname执行完以后再执行，否则会获取到错误的trackPathname
+                setTimeout(()=>{
+                    this.saveStrackData(type,name)
+                },300)
+            }
+            window.onbeforeunload = (e) => {
+                // trackSign = localStorage.getItem('trackSign')
+                // if( trackSign*1 >0){
+                //     this.postTrackData()
+                // }
+            }
+        }
+
+        cleanTrackData = () =>{
+            trackData={};
+            trackData.basic_info={};
+            trackData.event_list=[];
+            trackData = JSON.stringify(trackData);
+            localStorage.setItem('trackSign', 0)
+            localStorage.setItem('trackData',trackData)
+        }
+
+        getTrackData = () =>{
+            trackData = localStorage.getItem('trackData');
+            trackData = JSON.parse( trackData )
+            // 判断是否有初始值
+            if(Object.prototype.toString.call(trackData)!=='[object Object]'){
+                trackData={};
+                trackData.basic_info=[];
+                trackData.event_list=[];
+            }
+        }
+
+        saveStrackData = (type,name,extra={}) =>{
+            this.getTrackData()
+            const client_time = new Date().getTime();//事件发生时间（毫秒）
+            const event_category = type || '';//事件类型（view\click）
+            const title = document.title; //页面标题
+            // const location = window.location.href;  //当前页面
+            const location = window && window.trackPathname?window.trackPathname:window.location.pathname;  //当前页面
+            // const referer = document.referrer;//上一个页面的ID
+            let referer = localStorage.getItem('trackReferrer') || 'no-page';//上一个页面的ID
+
+            const target = name;//点击事件的name
+            // const app=this.myRef.current;
+            // const baseURI = app['baseURI']
+            const nameAurl = md5(target+location);
+            const obj= {client_time,event_category,referer,location,target,title,nameAurl,extra};
+            trackData['event_list'].push(obj);
+
+            let basic_info ={};
+            const basicArry =[
+                'user_id','token','province_id','wenli','score','score_diploma_id','score_rank','score_type','score_batch',
+                'appid','sys_version','vcode','vname','channel','platform','interface_v',
+                'brand','deviceuid','net_type',
+                'select_course','course_ids',
+                'senior_province_id','senior_city_id','senior_region_id','senior_school_id',
+                'sdk','platform','ua','session_id',
+                'diploma_id'];
+            for (const item of basicArry){
+                basic_info = Object.assign(basic_info,{[item]:getCookie(item)?getCookie(item):''})
+            }
+            var device_type = navigator.userAgent;//获取userAgent信息
+            var md = new MobileDetect(device_type);//实例化mobile-detect
+            const platform = basic_info.platform?basic_info.platform:md.is('iPhone')?'iOS':'android';//系统
+            const brand = basic_info.brand?basic_info.brand:md.mobile();  //手机型号
+            const ua = basic_info.ua?basic_info.ua:md.userAgent();  //userAgent
+            basic_info = Object.assign( basic_info, { platform , brand, ua });
+            trackData['basic_info'] = basic_info;
+
+
+            trackSign = localStorage.getItem('trackSign')
+            trackSign=Number( localStorage.getItem('trackSign') )
+            trackSign = trackSign!=='null'?trackSign:0
+            trackSign+=1;
+            trackData = JSON.stringify(trackData);
+            localStorage.setItem('trackSign', trackSign)
+            localStorage.setItem('trackData',trackData)
+            // 防止请求借口失败，那么下一次点击事件以后可以继续提交
+            if(trackSign>=trackDataLength){
+                this.postTrackData()
+            }
+        }
+        postTrackData = () =>{
+            Server.post('/track', JSON.parse(trackData))
+                .then(res => {
+                    if(res.code===0){
+                        this.cleanTrackData()
+                    }
+                })
+            // 请求数据是否可以压缩一下
+            // fetch('http://stat.data.wmzy.com:5004/log-collect/app-behavior-upload', {
+            //   method: 'POST',
+            //   mode:"cors",
+            //   body: trackData,
+            //   headers: new Headers({
+            //     // "Access-Control-Allow-Origin": "*",
+            //     "Access-Control-Allow-Headers": "Content-Type",
+            //     // 'Access-Control-Allow-Credentials':false,
+            //     // "Access-Control-Allow-Methods":"PUT,POST,GET,DELETE,OPTIONS",
+            //     "Content-Type": "application/json"
+            //   })
+            //   }).then((res) => {
+            //       localStorage.setItem('ressss',res)
+            //       return res.json()
+            //
+            //   })
+            //     .catch(error => {
+            //         localStorage.setItem('error',error)
+            //         console.error('Error:', error)
+            //     })
+            //     .then(response => {
+            //         localStorage.setItem('Success',response)
+            //         console.log('Success:', response)
+            //         if(response.code===0){
+            //             this.cleanTrackData()
+            //         }
+            //     });
+        }
+
+        async handleClick(event){
+            const type=this.props['data-type'];
+            if(type==='click'){
+                const name=this.props['data-name'];
+
+                const startTime = new Date().getTime();
+                this.props.handleClick && await this.props.handleClick(event)
+                const endTime = new Date().getTime();
+                const requestTime = endTime-startTime;
+
+                let extra={requestTime};
+                Object.keys(this.props).forEach((keys) => {
+                    if (keys.indexOf("data-") > -1) {
+                        if( !['data-type','data-name'].includes(keys) ){
+                            const name =  keys.replace('data-','');
+                            extra = Object.assign(extra,{[name]:this.props[keys]})
+                        }
+                    }
+                })
+                // ga统计
+                sendEvent('B100',name,JSON.stringify(extra));
+                if(this.props.stopPropagation===true) event.stopPropagation();
+                this.saveStrackData(type,name,extra)
+            }
+        }
+
+        handleTouchStart = (event) =>{
+            const { handleTouchStart } =this.props;
+            handleTouchStart && handleTouchStart()
+            startClientX=event.touches[0].clientX;
+            startClientY=event.touches[0].clientY;
+        }
+        handleTouchMove = (event) =>{
+            const { handleTouchMove } =this.props;
+            handleTouchMove && handleTouchMove()
+        }
+        handleTouchEnd = (event) =>{
+            const { handleTouchEnd } =this.props;
+            handleTouchEnd && handleTouchEnd()
+
+            const type=this.props['data-type']
+            const id=this.props['data-name']
+            if(type==='touch'){
+                const endClientX=event.changedTouches[0].clientX;
+                const endClientY=event.changedTouches[0].clientX;
+                const moved = Math.abs(endClientX-startClientX)>minRange || Math.abs(endClientY-startClientY)>minRange
+                if(moved){
+                    let direction=''
+                    if( Math.abs(endClientX-startClientX)>Math.abs(endClientY-startClientY) ){
+                        direction=endClientX>startClientX?'right':'left';
+                    }
+                    else{
+                        direction=endClientY>startClientY?'bottom':'top'
+                    }
+                    const extra={direction}
+                    this.saveStrackData(type,name,extra)
+                }
+            }
+        }
+
+        render() {
+                const { handleClick,handleTouchStart,handleTouchEnd,onTouchMove, ...rest } = this.props;
+                return (
+                    <WrappedComponent {...rest} ref={this.myRef} onClick={this.handleClick.bind(this)} handleClick={handleClick} onTouchMove={this.handleTouchMove} onTouchStart={this.handleTouchStart}  onTouchEnd={this.handleTouchEnd} >{this.props.children}</WrappedComponent>
+                );
+        }
+    }
+    Track.propTypes = {
+        ['data-type']        : PropTypes.string.isRequired,
+        ['data-name']          : PropTypes.string.isRequired,
+        stopPropagation      : PropTypes.bool
+    };
+    Track.defaultProps = {
+        ['data-type']        : 'click',
+        stopPropagation      : false
+    };
+    return Track
+
+}
+
+export default TrackCollector;
+
+
+
+function TcFnc(name,extra={},type='click') {
+    // ga统计
+    sendEvent('B100',name,JSON.stringify(extra));
+
+    trackData = localStorage.getItem('trackData');
+    trackData = JSON.parse( trackData )
+    // 判断是否有初始值
+    if(Object.prototype.toString.call(trackData)!=='[object Object]'){
+        trackData={};
+        trackData.basic_info=[];
+        trackData.event_list=[];
+    }
+    const client_time = new Date().getTime();//事件发生时间（毫秒）
+    const event_category = type || 'click';//事件类型（view\click）
+    const title = document.title; //页面标题
+    const location = window && window.trackPathname?window.trackPathname:window.location.pathname;  //当前页面
+    // const referer = document.referrer;//上一个页面的ID
+    let referer = localStorage.getItem('trackReferrer') || 'no-page';//上一个页面的ID
+    const target = name;//点击事件的name
+    // const app=this.myRef.current;
+    // const baseURI = app['baseURI']
+    const nameAurl = md5(target+location);
+    const obj= {client_time,event_category,referer,location,target,title,nameAurl,extra};
+    trackData['event_list'].push(obj);
+
+    let basic_info ={};
+    const basicArry =['diploma_id','province_id','score','score_batch','score_diploma_id','score_rank','score_type','token','user_id','wenli'];
+    for (const item of basicArry){
+        basic_info = Object.assign(basic_info,{[item]:getCookie(item)})
+    }
+    var device_type = navigator.userAgent;//获取userAgent信息
+    var md = new MobileDetect(device_type);//实例化mobile-detect
+    const platform = md.is('iPhone')?'iOS':'android';//系统
+    const brand = md.mobile();  //手机型号
+    const ua = md.userAgent();  //userAgent
+    basic_info = Object.assign( basic_info, { platform , brand, ua })
+    trackData['basic_info'] = basic_info;
+
+
+    trackSign = localStorage.getItem('trackSign')
+    trackSign=Number( localStorage.getItem('trackSign') )
+    trackSign = trackSign!=='null'?trackSign:0
+    trackSign+=1;
+    trackData = JSON.stringify(trackData);
+    localStorage.setItem('trackSign', trackSign)
+    localStorage.setItem('trackData',trackData)
+    // 防止请求借口失败，那么下一次点击事件以后可以继续提交
+    if(trackSign>=trackDataLength){
+
+        Server.post('/track', JSON.parse(trackData))
+            .then(res => {
+                debugger
+                if(res.code===0){
+                    trackData={};
+                    trackData.basic_info={};
+                    trackData.event_list=[];
+                    trackData = JSON.stringify(trackData);
+                    localStorage.setItem('trackSign', 0)
+                    localStorage.setItem('trackData',trackData)
+                }
+            })
+
+        // 请求数据是否可以压缩一下
+        // fetch('http://stat.data.wmzy.com:5004/log-collect/app-behavior-upload', {
+        //   method: 'POST',
+        //   mode:"cors",
+        //   body: trackData,
+        //   headers: new Headers({
+        //     // "Access-Control-Allow-Origin": "*",
+        //     "Access-Control-Allow-Headers": "Content-Type",
+        //     // 'Access-Control-Allow-Credentials':false,
+        //     // "Access-Control-Allow-Methods":"PUT,POST,GET,DELETE,OPTIONS",
+        //     "Content-Type": "application/json"
+        //   })
+        //   }).then((res) => {
+        //       localStorage.setItem('ressss',res)
+        //       return res.json()
+        //
+        //   })
+        //     .catch(error => {
+        //         localStorage.setItem('error',error)
+        //         console.error('Error:', error)
+        //     })
+        //     .then(response => {
+        //         localStorage.setItem('Success',response)
+        //         console.log('Success:', response)
+        //         if(response.code===0){
+        //             trackData={};
+        //             trackData.basic_info={};
+        //             trackData.event_list=[];
+        //             trackData = JSON.stringify(trackData);
+        //             localStorage.setItem('trackSign', 0)
+        //             localStorage.setItem('trackData',trackData)
+        //         }
+        //     });
+    }
+}
+export { TcFnc }
+
+
+
+
+
+// name 书写规则，页面title的拼音首字母缩写加上语义化的事件名，同时更新对应的表
+
+// 埋点函数使用
+// TcFnc(name,extra,type)
+// names       埋点名字，必填
+// extra={}    额外的参数(Object)，选填
+// type        事件类型(String)，可以为任何值，但是只会统计（'click','view'）,选填
+
+
+// 示例：
+// import {TC,TcFnc} from '@/components';
+// test = () =>{
+//      TcFnc('name',extra={})
+// }
+
+
+
+// 埋点组件使用:
+//
+//
+// 组件上可以使用的属性：
+//     data-name           //埋点的名字（必填）
+//     data-type           //埋点的类型（非必填，默认click）（可选click，view,touch）
+//     stopPropagation     //是否阻止冒泡（非必填，默认为false）
+//     handleClick         //点击事件（埋点组件上使用handleClick代替onClick）
+//
+//     也可以接受其他任何使用data-的自定义属性，会放到extra对象中去
+//     （使用场景，例如点击不同的tab，就可以通过添加data-index字段来标识我们点击的是哪一个）
+//
+//
+// 示例：
+//
+// import {TC} from '@/components';
+// const Track = TC(styled.div``)
+//
+//
+//
+// <Track data-name='collect_btn' data-index={2324} handleClick={this.attension} />

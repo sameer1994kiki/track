@@ -35,6 +35,7 @@ export default class Track {
 		const event_id = this.config.mapData[pathname]['event_id'];
 
 		// 默认额外参数_title
+		const extra = {}
 		extra.extra_title = document.title;
 		const event = {
 			extra,

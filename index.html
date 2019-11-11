@@ -1,118 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-		<title>Document</title>
-	</head>
-	<script src="./lib/index.js"></script>
-	<body>
-		<Button onclick="aaa()">click</Button>
-		<Button data-track="test1" data-extra='{"aa":123}' onclick="ccc()"
-			>注册</Button
-		>
-		<script>
-			var mapData = {
-				test1: {
-					// 事件独有的部分
-					extra: { a: 1 },
 
-					// 事件id，系统分配
-					event_id: "1",
-					// 事件时间
-					client_time: 1558448123697,
-					// 上一个事件id：TODO
-					last_event_id: "1"
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>Document</title>
+</head>
+<script src="./lib/index.js"></script>
+
+<body>
+	<Button>click</Button>
+	<Button data-track="test1" data-extra='{"aa":123}' onclick="ccc()">注册</Button>
+	<script>
+		var mapData = {
+			test1: {
+				// 事件独有的部分
+				extra: {
+					a: 1
 				},
-				test2: {
-					// 事件独有的部分
-					extra: { a: 2 },
 
-					// 事件id，系统分配
-					event_id: "2",
-					// 事件时间
-					client_time: 1558448123697,
-					// 上一个事件id：TODO
-					last_event_id: "2"
+				// 事件id，系统分配
+				event_id: "1",
+				// 事件时间
+				client_time: 1558448123697,
+				// 上一个事件id：TODO
+				last_event_id: "1"
+			},
+			test2: {
+				// 事件独有的部分
+				extra: {
+					a: 2
 				},
-				"/": {
-					// 事件独有的部分
-					extra: { a: 3 },
 
-					// 事件id，系统分配
-					event_id: "3",
-					// 事件时间
-					client_time: 1558448123697,
-					// 上一个事件id：TODO
-					last_event_id: "3"
-				}
-			};
-			function aaa() {
-				track.pageTrack();
+				// 事件id，系统分配
+				event_id: "2",
+				// 事件时间
+				client_time: 1558448123697,
+				// 上一个事件id：TODO
+				last_event_id: "2"
+			},
+			"/": {
+				// 事件独有的部分
+				extra: {
+					a: 3
+				},
+
+				// 事件id，系统分配
+				event_id: "3",
+				// 事件时间
+				client_time: 1558448123697,
+				// 上一个事件id：TODO
+				last_event_id: "3"
 			}
-			function ccc() {}
-			console.log(Track);
+		};
 
-			var track = new Track({
-				mapData,
-				// version: "1.0",
-				threshold: 4, //最大存储数量
-				// project: "wmzy-ui-common-services", //项目名称
-				url:
-					"http://collector.wmzy.com/log-collect/app-behavior-upload",
-				priority: "url", //可选url，cookie。出现同样的数据，那个优先级更高，默认url
-				// extraBasic: { aaa: 666 },
-				// extraEvent: { bbb: 9999 },
-				// basicInfoKeysReg: /^_/, //匹配到的字符串变为空
-				basicInfoKeys: [
-					"user_id",
-					"token",
-					"senior_province_id",
-					"senior_city_id",
-					"senior_region_id",
-					"senior_school_id",
-					"score",
-					"score_rank",
-					"score_type",
-					"score_batch",
-					"score_diploma_id",
-					"province_id",
-					"wenli",
-					"select_course",
-					"rank",
-					"device_id",
-					"interface_v",
-					"net_operators",
-					"_appid",
-					"_platform",
-					"_deviceuid",
-					"_channel",
-					"_vcode",
-					"_vname",
-					"_brand",
-					"_net_type",
-					"_sys_version",
-					// 抓包之外
-					"appid",
-					"course_ids",
-					"sdk",
-					"ua",
-					"session_id",
-					"diploma_id"
-				]
-			});
-			track.init();
-			// 	// .addPlugin(vuePlugin)
-			// 	.install()
-			// 	.on("captureBefore", data => {
-			// 		console.log(data);
-			// 	})
-			// 	.on("onPointClick", data => {
-			// 		// action = '{ type:"adButton",name:"广告位点击" }'
-			// 		console.log(data.value);
-			// 		console.log(data);
-			// 	});
-		</script>
-	</body>
+		function ccc() {}
+
+		var track = new Track({
+			mapData,
+			version: "1.0",
+			threshold: 4, //最大存储数量
+			project: "wmzy-ui-common-services", //项目名称
+			trackUrl: "http://collector.wmzy.com/log-collect/app-behavior-upload",
+			priority: "url", //可选url，cookie。出现同样的数据，那个优先级更高，默认url
+			// extraBasic: { aaa: 666 },
+			// extraEvent: { bbb: 9999 },
+		});
+		track.init();
+		track.tcFnc({
+			name: "viewwwwww",
+			extra: {},
+			type: "view"
+		}, )
+	</script>
+</body>
+
 </html>

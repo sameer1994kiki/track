@@ -1,0 +1,22 @@
+{
+  "name": "track",
+  "description": "行为监控上报插件",
+  "main": "dist/track.umd.js",
+  "authors": [
+    "sameer"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "track",
+    "埋点"
+  ],
+  "homepage": "https://github.com/sameer1994kiki/track",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

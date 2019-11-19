@@ -25,33 +25,35 @@ class Track {
     this.trackList = [];
   }
   init() {
-    console.log(1);
     console.log(999);
     this.domEvent();
   }
   domEvent() {
-    console.log(555);
-    document.getElementsByTagName("body")[0].addEventListener("click", e => {
-      const node = e.target;
-      const { dataset } = node;
-      let { track, extra = "{}" } = dataset;
-      if (
-        node &&
-        node.nodeType === 1 &&
-        typeof node.onclick === "function" &&
-        track
-      ) {
-        if (extra) {
-          extra = JSON.parse(extra);
+    const isBrower = this.isBrower();
+    if (isBrower) {
+      document.getElementsByTagName("body")[0].addEventListener("click", e => {
+        const node = e.target;
+        const { dataset } = node;
+        let { track, extra = "{}" } = dataset;
+        if (
+          node &&
+          node.nodeType === 1 &&
+          typeof node.onclick === "function" &&
+          track
+        ) {
+          console.log(track);
+          if (extra) {
+            extra = JSON.parse(extra);
+          }
+          extra.btn_text = node.innerText;
+          this.tcFnc({
+            name: track,
+            extra,
+            type: "click"
+          });
         }
-        extra.btn_text = node.innerText;
-        this.tcFnc({
-          name: track,
-          extra,
-          type: "click"
-        });
-      }
-    });
+      });
+    }
   }
   tcFnc(track) {
     track =
@@ -73,42 +75,31 @@ class Track {
   }
 
   saveStrackData(track) {
-    const {
-      project,
-      extraBasic,
-      version,
-      extraEvent,
-      threshold,
-      trackUrl
-    } = this.config;
-    const basic_info = {
-      project
-    };
+    const { extraEvent, threshold } = this.config;
+    const isBrower = this.isBrower();
+
     const urlData = this.getUrlParams();
     const cookieData = this.getCookieParams();
     track.extra = Object.assign({ extraEvent }, { urlData }, { cookieData });
     const event_list = {
       client_time: +new Date(),
       event_category: track.type,
-      referer: document.referrer || "",
-      location: document.location.pathname,
+      referer: isBrower ? document.referrer : "",
+      location: isBrower ? document.location.pathname : "",
       target: track.name,
       extra: track.extra || {}
     };
-    const trackData = {};
-    trackData["basic_info"] = Object.assign(basic_info, extraBasic);
     this.trackList.push(event_list);
-    trackData["event_list"] = this.trackList;
-    trackData["version"] = version;
-    if (this.trackList.length >= threshold && fetch)
-      this.postTrackData(trackUrl, trackData);
+    console.log(this.trackList);
+    if (this.trackList.length >= threshold) this.postTrackData();
   }
   // 获取url上的参数
   getUrlParams() {
-    var search =
-      typeof document !== "undefined" && document.location.search.length > 0
-        ? document.location.search.substring(1)
-        : "";
+    const isBrower = this.isBrower();
+    let search = "";
+    if (isBrower) {
+      search = document.location.search.length > 0 ? search.substring(1) : "";
+    }
     var searchArray = search.length > 0 ? search.split("&") : []; // 获取链接上已有的参数
     var searchObject = {};
     var obj = {};
@@ -122,7 +113,11 @@ class Track {
   }
   // 获取cookie中参数
   getCookieParams() {
-    var cookie = typeof document !== "undefined" && document.cookie;
+    let cookie = "";
+    const isBrower = this.isBrower();
+    if (isBrower) {
+      cookie = document.cookie;
+    }
     var obj = {};
     var cookieObject = {};
     var i, l;
@@ -138,14 +133,22 @@ class Track {
     return obj;
   }
   // 上传数据
-  postTrackData(url, data) {
+  postTrackData() {
+    const { trackUrl: url, extraBasic, version, project } = this.config;
+    const basic_info = {
+      project
+    };
+    const data = {};
+    data["basic_info"] = Object.assign(basic_info, extraBasic);
+    data["event_list"] = this.trackList;
+    data["version"] = version;
     // 请求数据是否可以压缩一下
     instance({
       method: "post",
       url,
       data
     })
-      .then(function(response) {
+      .then(response => {
         if (response.status === 200 && response.data.code === 0) {
           console.log("Success:", response);
           this.trackList = [];
@@ -157,7 +160,7 @@ class Track {
           this.postTrackDataAgain(url, newData);
         }
       })
-      .catch(function(error) {
+      .catch(error => {
         console.error("Error:", error);
         this.trackList = [];
       });
@@ -186,6 +189,11 @@ class Track {
         console.error("Error:", error);
         this.trackList = [];
       });
+  }
+
+  // 判断环境
+  isBrower() {
+    return typeof document !== "undefined";
   }
 }
 

@@ -34,7 +34,7 @@ export default class Track {
   }
 
   init(params = {}) {
-    this.config = params;
+    this.config = { ...this.config, ...params };
     this.domEvent();
     this.unload();
   }

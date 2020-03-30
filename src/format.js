@@ -13,7 +13,7 @@ const data = {
     }
   ],
   basic_info: {
-    project: "mece", //项目名称，和埋点上报系统保持一致
+    project: "MECE", //项目名称，和埋点上报系统保持一致
     platform: "android", // 平台 ，ios ， android，baidu_miniprogram,wechat_miniprogram，tt_miniprogram，pc：必填：枚举，小写
     is_h5: "1", // 是否为 H5 页面：原生选填，仅为h5必填字段，默认不是，原生会缺省，缺省不是，1 表示为 H5
     is_outside_app: "1", // 是否在 APP 外：原生选填，H5必填：缺省不是，1 表示 app 外

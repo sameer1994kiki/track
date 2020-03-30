@@ -1,6 +1,6 @@
 {
   "name": "sameer-track",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "track 是一个行为监控上报插件",
   "github": "https://github.com/sameer1994kiki/track.git",
   "license": "ISC",

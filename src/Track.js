@@ -1,14 +1,21 @@
-// const config = {
-//   trackUrl: "https://collector.wmzy.com/log-collect/app-behavior-upload",
-//   version: "1.0",
-//   threshold: 4, //最大存储数量
-//   project: "wmzy-pc" //项目名称,
-
-//   initBasic: { aaa: 666 },额外的基础数据
+// {
+//   trackUrl: 'https://collector.wmzy.com/log-collect/app-behavior-upload',
+//   version: '1.0.0',
+//   threshold: 4,
+//   project: 'MECE',
+//   preFix: 'MECE-H5',
+//   cookieData: true,
+//   urlData: true,
+//   log: true,
+//   initBasic: {
+//     // platform: 'android', // 平台 ，ios ， android，baidu_miniprogram,wechat_miniprogram，tt_miniprogram，pc：必填：枚举，小写
+//     is_h5: '1111', // 是否为 H5 页面：原生选填，仅为h5必填字段，默认不是，原生会缺省，缺省不是，1 表示为 H5
+//     is_outside_app: '1', // 是否在 APP 外：原生选填，H5必填：缺省不是，1 表示 app 外
+//     // third_channel_id: '10001', //三级渠道id
+//     // second_channel_id: '66666', //二级渠道id
+//   }, //额外的基础数据
 //   extraEvent: { bbb: 9999 },
-//   cookieData:true,
-//   urlData:true,
-// };
+// }
 import axios from "axios";
 
 const instance = axios.create({
@@ -26,7 +33,8 @@ export default class Track {
     this.page = null;
   }
 
-  init() {
+  init(params = {}) {
+    this.config = params;
     this.domEvent();
     this.unload();
   }
@@ -138,13 +146,13 @@ export default class Track {
   }
 
   saveStrackData(track) {
-    const { extraEvent, threshold } = this.config;
+    const { extraEvent, threshold, preFix } = this.config;
     const isBrower = this.isBrower();
     const urlData = this.getUrlParams();
 
     track.extra = { ...track.extra, ...urlData, ...extraEvent };
     const event_list = {
-      event_id: track.name,
+      event_id: `${preFix || ""}-${track.name}`,
       client_time: +new Date(),
       event_category: track.type,
       referer: isBrower ? document.referrer : "",

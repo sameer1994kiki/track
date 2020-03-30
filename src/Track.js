@@ -48,12 +48,10 @@ export default class Track {
     // });
     // window.addEventListener('hashchange', function(event) {
     //   debugger;
-    //   console.log(event);
     // });
 
     // window.addEventListener('popstate', function(event) {
     //   debugger;
-    //   console.log(event);
     // });
 
     window.addEventListener("pagehide", function(event) {
@@ -65,11 +63,9 @@ export default class Track {
     });
     // window.addEventListener('pageshow', function(event) {
     //   debugger;
-    //   console.log(event);
     // });
     // window.addEventListener('onunload', function(event) {
     //   debugger;
-    //   console.log(event);
     // });
     // window.addEventListener('error', function(event) {
     //   debugger;
@@ -160,9 +156,7 @@ export default class Track {
       extra: track.extra || {}
     };
     this.trackList.push(event_list);
-    if (this.config.log) {
-      console.log(this.trackList);
-    }
+
     if (this.trackList.length >= threshold) this.postTrackData();
   }
 
@@ -199,7 +193,7 @@ export default class Track {
       });
   }
 
-  postTrackDataAgain = data => {
+  postTrackDataAgain(data) {
     const { trackUrl: url } = this.config;
     instance({
       method: "post",
@@ -208,10 +202,12 @@ export default class Track {
     }).then(() => {
       this.trackList = [];
     });
-  };
+  }
 
   // 判断环境
-  isBrower = () => typeof document !== "undefined";
+  isBrower() {
+    return typeof document !== "undefined";
+  }
 
   // 获取url上的参数
   getUrlParams() {

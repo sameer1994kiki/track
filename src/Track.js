@@ -16,15 +16,7 @@
 //   }, //额外的基础数据
 //   extraEvent: { bbb: 9999 },
 // }
-import axios from "axios";
-
-const instance = axios.create({
-  mode: "cors",
-  headers: {
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Content-Type": "application/json"
-  }
-});
+import "whatwg-fetch";
 export default class Track {
   constructor(params = {}) {
     this.config = params;
@@ -172,10 +164,15 @@ export default class Track {
     data.event_list = this.trackList;
     data.version = version;
     // 请求数据是否可以压缩一下
-    instance({
-      method: "post",
-      url,
-      data
+    // instance({
+    //   method: "post",
+    //   url,
+    //   data
+    // });
+
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify(data)
     })
       .then(response => {
         if (response.status === 200 && response.data.code === 0) {
@@ -195,10 +192,14 @@ export default class Track {
 
   postTrackDataAgain(data) {
     const { trackUrl: url } = this.config;
-    instance({
-      method: "post",
-      url,
-      data
+    // instance({
+    //   method: "post",
+    //   url,
+    //   data
+    // })
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify(data)
     }).then(() => {
       this.trackList = [];
     });

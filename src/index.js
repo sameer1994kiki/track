@@ -1,28 +1,20 @@
-// {
-//   trackUrl: 'https://collector.wmzy.com/log-collect/app-behavior-upload',
-//   version: '1.0.0',
-//   threshold: 4,
-//   project: 'MECE',
-//   preFix: 'MECE-H5',
-//   cookieData: true,
-//   urlData: true,
-//   log: true,
-//   initBasic: {
-//     // platform: 'android', // 平台 ，ios ， android，baidu_miniprogram,wechat_miniprogram，tt_miniprogram，pc：必填：枚举，小写
-//     is_h5: '1111', // 是否为 H5 页面：原生选填，仅为h5必填字段，默认不是，原生会缺省，缺省不是，1 表示为 H5
-//     is_outside_app: '1', // 是否在 APP 外：原生选填，H5必填：缺省不是，1 表示 app 外
-//     // third_channel_id: '10001', //三级渠道id
-//     // second_channel_id: '66666', //二级渠道id
-//   }, //额外的基础数据
-//   extraEvent: { bbb: 9999 },
-// }
-import "whatwg-fetch";
+import axios from "axios";
+
+const instance = axios.create({
+  mode: "cors",
+  headers: {
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json",
+  },
+});
 export default class Track {
   constructor(params = {}) {
     this.config = params;
     this.trackList = [];
     this.timer = null;
     this.page = null;
+    this.referrer = "";
+    this.location = "";
   }
 
   init(params = {}) {
@@ -31,66 +23,51 @@ export default class Track {
     this.unload();
   }
   unload() {
-    // window.addEventListener('beforeunload', function(event) {
-    //   this.setTimer({
-    //     name: this.page,
-    //     extra: {},
-    //     type: 'view',
-    //   });
-    // });
-    // window.addEventListener('hashchange', function(event) {
-    //   debugger;
-    // });
-
-    // window.addEventListener('popstate', function(event) {
-    //   debugger;
-    // });
-
-    window.addEventListener("pagehide", function(event) {
+    window.addEventListener("pagehide", () => {
       this.setTimer({
         name: this.page,
         extra: {},
-        type: "view"
+        type: "view",
       });
     });
-    // window.addEventListener('pageshow', function(event) {
-    //   debugger;
-    // });
-    // window.addEventListener('onunload', function(event) {
-    //   debugger;
-    // });
-    // window.addEventListener('error', function(event) {
-    //   debugger;
-    //   console.log(event);
-    // });
+
+    window.addEventListener("error", (event) => {
+      this.tcFnc({
+        name: `${this.config.project || ""}-error`,
+        extra: { event },
+        type: "click",
+      });
+    });
   }
 
   domEvent() {
     const isBrower = this.isBrower();
     if (isBrower) {
-      document.getElementsByTagName("body")[0].addEventListener("click", e => {
-        const node = e.target;
-        const { dataset } = node;
-        let { extra = "{}" } = dataset;
-        const { track } = dataset;
-        // 判断是元素节点，且元素节点上绑定了click事件，且有自定义属性data-track
-        if (
-          node &&
-          node.nodeType === 1 &&
-          typeof node.onclick === "function" &&
-          track
-        ) {
-          if (extra) {
-            extra = JSON.parse(extra);
+      document
+        .getElementsByTagName("body")[0]
+        .addEventListener("click", (e) => {
+          const node = e.target;
+          const { dataset } = node;
+          let { extra = "{}" } = dataset;
+          const { track } = dataset;
+          // 判断是元素节点，且元素节点上绑定了click事件，且有自定义属性data-track
+          if (
+            node &&
+            node.nodeType === 1 &&
+            typeof node.onclick === "function" &&
+            track
+          ) {
+            if (extra) {
+              extra = JSON.parse(extra);
+            }
+            extra.btn_text = node.innerText;
+            this.tcFnc({
+              name: track,
+              extra,
+              type: "click",
+            });
           }
-          extra.btn_text = node.innerText;
-          this.tcFnc({
-            name: track,
-            extra,
-            type: "click"
-          });
-        }
-      });
+        });
     }
   }
 
@@ -100,15 +77,15 @@ export default class Track {
         ? {
             name: track,
             extra: {},
-            type: "click"
+            type: "click",
           }
         : {
             ...{
               name: "",
               extra: {},
-              type: "click"
+              type: "click",
             },
-            ...track
+            ...track,
           };
     this.setTimer(track);
     this.saveStrackData(track);
@@ -116,6 +93,10 @@ export default class Track {
 
   setTimer(track) {
     if (track.type === "view") {
+      const isBrower = this.isBrower();
+      this.referrer = this.location;
+      this.location = isBrower ? document.location.pathname : "";
+
       if (this.timer) {
         // 这里做一个简单的深拷贝
         const countTrack = JSON.parse(JSON.stringify(track));
@@ -134,47 +115,56 @@ export default class Track {
   }
 
   saveStrackData(track) {
-    const { extraEvent, threshold, preFix } = this.config;
+    const { extraEvent = {}, threshold, preFix, log, urlData } = this.config;
     const isBrower = this.isBrower();
-    const urlData = this.getUrlParams();
+    const urlParams = urlData ? this.getUrlParams() : {};
+    track.extra = { ...track.extra, ...urlParams, ...extraEvent };
+    let referrer = isBrower ? document.referrer : "";
+    if (referrer) {
+      referrer = referrer.replace(/http:\/\/\S+?\//g, "").split("?");
+      referrer = "/" + referrer[0];
+    }
 
-    track.extra = { ...track.extra, ...urlData, ...extraEvent };
     const event_list = {
       event_id: `${preFix || ""}-${track.name}`,
       client_time: +new Date(),
       event_category: track.type,
-      referer: isBrower ? document.referrer : "",
+      referrer: this.referrer,
       location: isBrower ? document.location.pathname : "",
-      extra: track.extra || {}
+      extra: track.extra || {},
     };
     this.trackList.push(event_list);
-
-    if (this.trackList.length >= threshold) this.postTrackData();
+    if (log) {
+      console.log(this.trackList);
+    }
+    if (this.trackList.length >= threshold || track.immediate === true)
+      this.postTrackData(track);
   }
 
   // 上传数据
-  postTrackData() {
-    const { trackUrl: url, initBasic, version, project } = this.config;
+  postTrackData(track) {
+    const {
+      trackUrl: url,
+      initBasic = {},
+      version,
+      project,
+      cookieData,
+    } = this.config;
     const basic_info = {
-      project
+      project,
     };
     const data = {};
-    const cookieData = this.getCookieParams();
-    data.basic_info = { ...basic_info, ...cookieData, ...initBasic };
+    const cookieParams = cookieData === true ? this.getCookieParams() : {};
+    data.basic_info = { ...basic_info, ...cookieParams, ...initBasic };
     data.event_list = this.trackList;
     data.version = version;
     // 请求数据是否可以压缩一下
-    // instance({
-    //   method: "post",
-    //   url,
-    //   data
-    // });
-
-    fetch(url, {
-      method: "POST",
-      body: JSON.stringify(data)
+    instance({
+      method: "post",
+      url,
+      data,
     })
-      .then(response => {
+      .then((response) => {
         if (response.status === 200 && response.data.code === 0) {
           this.trackList = [];
         } else {
@@ -187,19 +177,20 @@ export default class Track {
       })
       .catch(() => {
         this.trackList = [];
+      })
+      .finally(() => {
+        if (track.cb) {
+          track.cb();
+        }
       });
   }
 
   postTrackDataAgain(data) {
     const { trackUrl: url } = this.config;
-    // instance({
-    //   method: "post",
-    //   url,
-    //   data
-    // })
-    fetch(url, {
-      method: "POST",
-      body: JSON.stringify(data)
+    instance({
+      method: "post",
+      url,
+      data,
     }).then(() => {
       this.trackList = [];
     });
@@ -215,7 +206,8 @@ export default class Track {
     const isBrower = this.isBrower();
     let search = "";
     if (isBrower) {
-      search = document.location.search.length > 0 ? search.substring(1) : "";
+      search = document.location.search;
+      search = search.length > 0 ? search.substring(1) : "";
     }
     const searchArray = search.length > 0 ? search.split("&") : []; // 获取链接上已有的参数
     const searchObject = {};

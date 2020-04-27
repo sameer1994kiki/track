@@ -11,8 +11,8 @@ export default class Track {
   constructor(params = {}) {
     this.config = params;
     this.trackList = [];
-    this.timer = null;
-    this.page = null;
+    this.timer = "";
+    this.page = "";
     this.referrer = "";
     this.location = "";
   }
@@ -87,8 +87,25 @@ export default class Track {
             },
             ...track,
           };
+    this.initData();
     this.setTimer(track);
     this.saveStrackData(track);
+  }
+  initData() {
+    try {
+      const track_data = localStorage.getItem("track_data") || "[]";
+      this.trackList = JSON.parse(track_data);
+      const track_timer = localStorage.getItem("track_timer") || "";
+      this.timer = track_timer;
+      const track_page = localStorage.getItem("track_page") || "";
+      this.page = track_page;
+      const track_referrer = localStorage.getItem("track_referrer") || "";
+      this.referrer = track_referrer;
+      const track_location = localStorage.getItem("track_location") || "";
+      this.location = track_location;
+    } catch {
+      this.clearTrackData();
+    }
   }
 
   setTimer(track) {
@@ -96,21 +113,24 @@ export default class Track {
       const isBrower = this.isBrower();
       this.referrer = this.location;
       this.location = isBrower ? document.location.pathname : "";
-
       if (this.timer) {
         // 这里做一个简单的深拷贝
         const countTrack = JSON.parse(JSON.stringify(track));
-        const tp = +new Date() - this.timer;
+        const tp = +new Date() - Number(this.timer);
         countTrack.name = this.page;
         countTrack.type = "count";
         countTrack.extra.count = tp;
         this.saveStrackData(countTrack);
-        this.timer = null;
-        this.page = null;
+        this.timer = "";
+        this.page = "";
       } else {
         this.timer = +new Date();
         this.page = track.name;
       }
+      localStorage.setItem("track_location", this.location);
+      localStorage.setItem("track_referrer", this.referrer);
+      localStorage.setItem("track_timer", this.timer);
+      localStorage.setItem("track_page", this.page);
     }
   }
 
@@ -134,6 +154,7 @@ export default class Track {
       extra: track.extra || {},
     };
     this.trackList.push(event_list);
+    localStorage.setItem("track_data", JSON.stringify(this.trackList));
     if (log) {
       console.log(this.trackList);
     }
@@ -166,7 +187,7 @@ export default class Track {
     })
       .then((response) => {
         if (response.status === 200 && response.data.code === 0) {
-          this.trackList = [];
+          this.clearTrackData();
         } else {
           //  上报失败重新上报，并统计失败数量
           this.postTrackDataAgain(url, data);
@@ -176,7 +197,7 @@ export default class Track {
         }
       })
       .catch(() => {
-        this.trackList = [];
+        this.clearTrackData();
       })
       .finally(() => {
         if (track.cb) {
@@ -191,9 +212,13 @@ export default class Track {
       method: "post",
       url,
       data,
-    }).then(() => {
-      this.trackList = [];
+    }).finally(() => {
+      this.clearTrackData();
     });
+  }
+  clearTrackData() {
+    this.trackList = [];
+    localStorage.setItem("track_data", this.trackList);
   }
 
   // 判断环境

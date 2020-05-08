@@ -93,15 +93,23 @@ export default class Track {
   }
   initData() {
     try {
-      const track_data = localStorage.getItem("track_data") || "[]";
+      let track_data = "[]";
+      let track_timer = "";
+      let track_page = "";
+      let track_referrer = "";
+      let track_location = "";
+      if (typeof localStorage === "object") {
+        track_data = localStorage.getItem("track_data") || "[]";
+        track_timer = localStorage.getItem("track_timer") || "";
+        track_page = localStorage.getItem("track_page") || "";
+        track_referrer = localStorage.getItem("track_referrer") || "";
+        track_location = localStorage.getItem("track_location") || "";
+      }
+
       this.trackList = JSON.parse(track_data);
-      const track_timer = localStorage.getItem("track_timer") || "";
       this.timer = track_timer;
-      const track_page = localStorage.getItem("track_page") || "";
       this.page = track_page;
-      const track_referrer = localStorage.getItem("track_referrer") || "";
       this.referrer = track_referrer;
-      const track_location = localStorage.getItem("track_location") || "";
       this.location = track_location;
     } catch {
       this.clearTrackData();
@@ -127,10 +135,12 @@ export default class Track {
         this.timer = +new Date();
         this.page = track.name;
       }
-      localStorage.setItem("track_location", this.location);
-      localStorage.setItem("track_referrer", this.referrer);
-      localStorage.setItem("track_timer", this.timer);
-      localStorage.setItem("track_page", this.page);
+      if (typeof localStorage === "object") {
+        localStorage.setItem("track_location", this.location);
+        localStorage.setItem("track_referrer", this.referrer);
+        localStorage.setItem("track_timer", this.timer);
+        localStorage.setItem("track_page", this.page);
+      }
     }
   }
 
@@ -154,7 +164,10 @@ export default class Track {
       extra: track.extra || {},
     };
     this.trackList.push(event_list);
-    localStorage.setItem("track_data", JSON.stringify(this.trackList));
+    if (typeof localStorage === "object") {
+      localStorage.setItem("track_data", JSON.stringify(this.trackList));
+    }
+
     if (log) {
       console.log(this.trackList);
     }
@@ -218,7 +231,9 @@ export default class Track {
   }
   clearTrackData() {
     this.trackList = [];
-    localStorage.setItem("track_data", this.trackList);
+    if (typeof localStorage === "object") {
+      localStorage.setItem("track_data", this.trackList);
+    }
   }
 
   // 判断环境

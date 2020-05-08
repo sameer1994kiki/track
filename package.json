@@ -1,8 +1,8 @@
 {
-  "name": "sameer-track",
-  "version": "2.1.0",
+  "name": "track",
+  "version": "2.2.0",
   "description": "track 是一个行为监控上报插件",
-  "main": "dist/library.umd.js",
+  "main": "dist/track.umd.js",
   "module": "src/index",
   "types": "dist/index.d.ts",
   "sideEffects": true,

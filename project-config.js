@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 /*
 project-config.js 是整个项目的配置文件，是 library-webpack-template 提供的 面向使用者的 对 整个项目的配置入口；
@@ -6,18 +6,14 @@ project-config.js 是整个项目的配置文件，是 library-webpack-template 
 https://github.com/GuoBinyong/library-webpack-template
 */
 
-const path = require('path');
-const tools = require('./build/tools');
-
-
+const path = require("path");
+const tools = require("./build/tools");
 
 function resolve(dir) {
-  return path.join(__dirname, dir)
+  return path.join(__dirname, dir);
 }
 
-
 var projectConfig = {
-
   /*
   指定 在将 多构建目标 `multipleTargets` 中的选项 与 默认的项目配置 projectConfig 进行合并时 采用覆盖方式进行合并的 key；
     - **类型：** undefined | null | Array<string>
@@ -27,7 +23,6 @@ var projectConfig = {
        * 些选择只能配置在 projectConfig 的顶层（即：projectConfig.overrideKeys），多构建目标 `multipleTargets` 中的 overrideKeys 选项会被忽略；
   */
   // overrideKeys:["externals"],
-
 
   /*
   配置多个构建目标；当进行构建时，会对 multipleTargets 数组中的每个项目配置分别构建并生成对应的包；
@@ -45,15 +40,15 @@ var projectConfig = {
   */
   multipleTargets: [
     //使用默认的配置
-    null,  // 目前默认配置是：web环境下的umd方案
+    null, // 目前默认配置是：web环境下的umd方案
 
-     // 通过 script 标签直接引用
-     {
-      target: "web",  //设置被构建的包的运行环境
-      filename: '[name].script.js',  //输出的包名
+    // 通过 script 标签直接引用
+    {
+      target: "web", //设置被构建的包的运行环境
+      filename: "[name].script.js", //输出的包名
       // library: "",  //库名
-      libraryTarget: "window",  //将包挂载到window中与库名同名的属性上
-      externals: {},  //不排除何依赖，即将所有依赖都打包进库
+      libraryTarget: "window", //将包挂载到window中与库名同名的属性上
+      externals: {}, //不排除何依赖，即将所有依赖都打包进库
     },
 
     // 通过 commonjs2 规范引用
@@ -61,16 +56,16 @@ var projectConfig = {
       // target: "web",   //设置被构建的包的运行环境
       // filename: '[name].commonjs2.js',  //输出的包名
       // library: "",  //库名
-      libraryTarget: "commonjs2",  //将库构建成遵循 commonjs2 规范的包
-      externals: undefined,  //排除 node_module 中的所有依赖
+      libraryTarget: "commonjs2", //将库构建成遵循 commonjs2 规范的包
+      externals: undefined, //排除 node_module 中的所有依赖
     },
     // 通过 commonjs 规范引用
     {
       // target: "web",   //设置被构建的包的运行环境
       // filename: '[name].commonjs2.js',  //输出的包名
       // library: "",  //库名
-      libraryTarget: "commonjs",  //将库构建成遵循 commonjs2 规范的包
-      externals: undefined,  //排除 node_module 中的所有依赖
+      libraryTarget: "commonjs", //将库构建成遵循 commonjs2 规范的包
+      externals: undefined, //排除 node_module 中的所有依赖
     },
 
     // 通过 amd 规范引用
@@ -78,8 +73,8 @@ var projectConfig = {
       // target: "web",   //设置被构建的包的运行环境
       // filename: '[name].amd.js',  //输出的包名
       // library: "",  //库名
-      libraryTarget: "amd",  //将库构建成遵循 commonjs2 规范的包
-      externals: undefined,  //排除 node_module 中的所有依赖
+      libraryTarget: "amd", //将库构建成遵循 commonjs2 规范的包
+      externals: undefined, //排除 node_module 中的所有依赖
     },
 
     // node 环境中的 umd 模块化方案
@@ -90,11 +85,7 @@ var projectConfig = {
       libraryTarget: "umd",  //将库构建成遵循 commonjs2 规范的包
       externals: undefined,  //排除 node_module 中的所有依赖
     }, */
-
   ],
-
-
-
 
   /*
  webpack 的入口配置 entry；  指示 webpack 应该使用哪个模块，来作为构建其内部 依赖图的开始
@@ -109,7 +100,7 @@ var projectConfig = {
     - 类型： string | function (compiler)
     - 详细信息： <https://webpack.docschina.org/configuration/target/#target>
   */
-  target: "web",  //node  web 等等
+  target: "web", //node  web 等等
 
   /*
   webpack 的 filename；此选项决定了每个输出 bundle 的名称。这些 bundle 将写入到 output.path 选项指定的目录下
@@ -164,13 +155,12 @@ var projectConfig = {
     // '@': resolve('src'),
   },
 
-
   /*
   webpack 的 resolve.extensions，自动解析确定的扩展名，能够使用户在引入模块时不用写文件的扩展名
     - 类型： string[]
     - 详细信息： <https://webpack.docschina.org/configuration/resolve/#resolve-extensions>
   */
-  extensions: ['.tsx', '.ts', '.jsx','.js', '.json'],
+  extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
 
   /*
   webpack 的 externals； 排除依赖的模块；防止将某些 import 的包(package)打包到 bundle 中；
@@ -180,12 +170,7 @@ var projectConfig = {
   */
   // externals: {},
 
-
-
-
-
-
-    /*
+  /*
      是否使用 Eslint Loader；
       - 类型： boolean
       - 默认值： false
@@ -194,9 +179,9 @@ var projectConfig = {
      If true, your code will be linted during bundling and
      linting errors and warnings will be shown in the console.
     */
-   useEslint: true,
+  useEslint: true,
 
-   /*
+  /*
    是否在浏览器中显示 Eslint 的错误和警告；
      - 类型： boolean
      - 默认值： false
@@ -205,10 +190,7 @@ var projectConfig = {
     If true, eslint errors and warnings will also be shown in the error overlay
     in the browser.
     */
-   showEslintErrorsInOverlay: true,
-
-
-
+  showEslintErrorsInOverlay: true,
 
   /*
   html模板文件；html-webpack-plugin
@@ -218,7 +200,6 @@ var projectConfig = {
   */
   // htmlTemplate:"index.html",
 
-
   /*
   要将 html模板文件 htmlTemplate 写入的文件。您也可以在此处指定子目录；该选项会结合 outputPath 选项 生成 html-webpack-plugin
  的 filename 选项 的值；
@@ -226,8 +207,7 @@ var projectConfig = {
     - 默认值： "index.html"
     - 详细信息： <https://github.com/ampedandwired/html-webpack-plugin>
   */
-  htmlOut: 'index.html',
-
+  htmlOut: "index.html",
 
   /*
   静态资源的原目录；该目录下的内容将会被拷贝到构建输出目录中；
@@ -239,26 +219,18 @@ var projectConfig = {
   静态资源输出目录；设置将静态资源从原目录拷贝到构建输出目录中时，静态资源目录的名字；
     - 类型： string
   */
-  staticOutDirectory: 'static',
+  staticOutDirectory: "static",
 
-
-
-  /* 
+  /*
   是否要对 `node_modules` 中的模块进行编译；
     - **类型：** boolean
     - **默认值：** `true`
     - **说明：** 如果设置为 `false`，则 `node_modules` 中的依赖会被直接包含，不会经过 webpack 相应 loader 的处理；
   */
   // parseNodeModules:true,
-  
-
-
-
 
   // TypeScript配置
   tsconfig: {
-
-
     /*
     指定TypeScript编译成 ECMAScript 的目标版本；用作 tsconfig.json 的 target 选项；
       - 类型： "ES3" | "ES5" | "ES6"/"ES2015" | "ES2016" | "ES2017" | "ESNext"
@@ -273,7 +245,7 @@ var projectConfig = {
       - 默认值： target === "ES6" ? "ES6" : "commonjs"
       - 详细信息： <https://www.tslang.cn/docs/handbook/compiler-options.html>
      */
-     // module:"ES6",
+    // module:"ES6",
 
     /*
     指定是否生成相应的 .d.ts 文件。用作 tsconfig.json 的 declaration 选项
@@ -282,10 +254,6 @@ var projectConfig = {
       - 详细信息： <https://www.tslang.cn/docs/handbook/compiler-options.html>
     */
     declaration: true,
-
-
-
-
 
     /*
     配置解析 TypeScript 的 loader
@@ -297,11 +265,7 @@ var projectConfig = {
       * "babel-loader" 暂未支持生成 声明文件 .d.ts，并且会忽略 项目中关于 TypeScript 的自定配置，如：tsconfig.json、tsconfig.dev.js、tsconfig.prod.js 中的配置
     */
     loader: "ts-loader",
-
   },
-
-
-
 
   /*
   是否开启构建分析报告；
@@ -309,7 +273,6 @@ var projectConfig = {
     - 默认值： process.env.npm_config_report； 即：根据执行命令时是否带有 `--report` 选项来决定是否开启 构建分析报告；
   */
   // bundleAnalyzerReport: true,
-
 
   /*
   构建分析报告的配置选项； webpack-bundle-analyzer 的 webpack 插件选项对象；
@@ -324,7 +287,6 @@ var projectConfig = {
     // analyzerHost: "127.0.0.1",
     // analyzerPort: "9033",
   }, */
-
 
   /*
   开发模式的配置选项对象
@@ -347,7 +309,6 @@ var projectConfig = {
     */
     outputPath: resolve("dev"),
 
-
     /*
     source map 的开关；用于控制是否生成 source map；
       - 类型： boolean
@@ -361,7 +322,7 @@ var projectConfig = {
       - 默认值： false
       - 详细信息： <https://webpack.docschina.org/configuration/devtool/>
      */
-    devtool: 'cheap-module-eval-source-map',
+    devtool: "cheap-module-eval-source-map",
 
     /*
     CSS source map 的开关；用于控制是否生成 CSS 的 source map；
@@ -370,7 +331,6 @@ var projectConfig = {
     */
     cssSourceMap: true,
   },
-
 
   /*
   生产模式的配置选项对象
@@ -393,7 +353,6 @@ var projectConfig = {
     */
     outputPath: resolve("dist"),
 
-
     /*
 source map 的开关；用于控制是否生成 source map；
   - 类型： boolean
@@ -402,20 +361,14 @@ source map 的开关；用于控制是否生成 source map；
 */
     sourceMap: true,
 
-
     /*
      webpack 的 devtool 选项；用于控制如何生成 source map；
       - 类型： string
       - 默认值： false
       - 详细信息： <https://webpack.docschina.org/configuration/devtool/>
      */
-    devtool: '#source-map',
-  }
-
-}
-
-
-
-
+    devtool: "#source-map",
+  },
+};
 
 module.exports = tools.projecConfigMultipleTargetsSeparation(projectConfig);

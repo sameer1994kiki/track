@@ -186,6 +186,7 @@ export default class Track {
     data.basic_info = { ...basic_info, ...cookieParams, ...initBasic };
     data.event_list = this.trackList;
     data.version = version;
+    console.log("7777");
     // 请求数据是否可以压缩一下
     instance({
       method: "post",

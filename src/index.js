@@ -93,24 +93,18 @@ export default class Track {
   }
   initData() {
     try {
-      let track_data = "[]";
-      let track_timer = "";
-      let track_page = "";
-      let track_referrer = "";
-      let track_location = "";
       if (typeof localStorage === "object") {
-        track_data = localStorage.getItem("track_data") || "[]";
-        track_timer = localStorage.getItem("track_timer") || "";
-        track_page = localStorage.getItem("track_page") || "";
-        track_referrer = localStorage.getItem("track_referrer") || "";
-        track_location = localStorage.getItem("track_location") || "";
+        const track_data = localStorage.getItem("track_data") || "[]";
+        const track_timer = localStorage.getItem("track_timer") || "";
+        const track_page = localStorage.getItem("track_page") || "";
+        const track_referrer = localStorage.getItem("track_referrer") || "";
+        const track_location = localStorage.getItem("track_location") || "";
+        this.trackList = JSON.parse(track_data);
+        this.timer = track_timer;
+        this.page = track_page;
+        this.referrer = track_referrer;
+        this.location = track_location;
       }
-
-      this.trackList = JSON.parse(track_data);
-      this.timer = track_timer;
-      this.page = track_page;
-      this.referrer = track_referrer;
-      this.location = track_location;
     } catch {
       this.clearTrackData();
     }

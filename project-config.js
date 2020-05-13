@@ -78,13 +78,13 @@ var projectConfig = {
     },
 
     // node 环境中的 umd 模块化方案
-    /* {
-      target: "node",   //设置被构建的包的运行环境
-      filename: '[name].umd.node.js',  //输出的包名
+    {
+      target: "node", //设置被构建的包的运行环境
+      filename: "[name].umd.node.js", //输出的包名
       // library: "",  //库名
-      libraryTarget: "umd",  //将库构建成遵循 commonjs2 规范的包
-      externals: undefined,  //排除 node_module 中的所有依赖
-    }, */
+      libraryTarget: "umd", //将库构建成遵循 commonjs2 规范的包
+      externals: undefined, //排除 node_module 中的所有依赖
+    },
   ],
 
   /*
@@ -100,7 +100,7 @@ var projectConfig = {
     - 类型： string | function (compiler)
     - 详细信息： <https://webpack.docschina.org/configuration/target/#target>
   */
-  target: "web", //node  web 等等
+  target: "node", //node  web 等等
 
   /*
   webpack 的 filename；此选项决定了每个输出 bundle 的名称。这些 bundle 将写入到 output.path 选项指定的目录下

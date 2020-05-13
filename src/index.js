@@ -23,21 +23,24 @@ export default class Track {
     this.unload();
   }
   unload() {
-    window.addEventListener("pagehide", () => {
-      this.setTimer({
-        name: this.page,
-        extra: {},
-        type: "view",
+    const isBrower = this.isBrower();
+    if (isBrower) {
+      window.addEventListener("pagehide", () => {
+        this.setTimer({
+          name: this.page,
+          extra: {},
+          type: "view",
+        });
       });
-    });
 
-    window.addEventListener("error", (event) => {
-      this.tcFnc({
-        name: `${this.config.project || ""}-error`,
-        extra: { event },
-        type: "click",
+      window.addEventListener("error", (event) => {
+        this.tcFnc({
+          name: `${this.config.project || ""}-error`,
+          extra: { event },
+          type: "click",
+        });
       });
-    });
+    }
   }
 
   domEvent() {

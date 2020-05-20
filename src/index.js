@@ -186,7 +186,15 @@ export default class Track {
     };
     const data = {};
     const cookieParams = cookieData === true ? this.getCookieParams() : {};
-    data.basic_info = { ...basic_info, ...cookieParams, ...initBasic };
+    data.basic_info = {
+      ...{
+        "User-Agent":
+          typeof navigator !== "undefined" ? navigator.userAgent : "",
+      },
+      ...basic_info,
+      ...cookieParams,
+      ...initBasic,
+    };
     data.event_list = this.trackList;
     data.version = version;
     // 请求数据是否可以压缩一下

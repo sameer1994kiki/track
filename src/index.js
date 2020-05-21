@@ -125,7 +125,9 @@ export default class Track {
         countTrack.name = this.page;
         countTrack.type = "count";
         countTrack.extra.count = tp;
-        this.saveStrackData(countTrack);
+        if (countTrack.name) {
+          this.saveStrackData(countTrack);
+        }
         this.timer = "";
         this.page = "";
       } else {

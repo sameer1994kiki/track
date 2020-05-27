@@ -190,7 +190,7 @@ export default class Track {
     const cookieParams = cookieData === true ? this.getCookieParams() : {};
     data.basic_info = {
       ...{
-        "User-Agent":
+        "user_agent":
           typeof navigator !== "undefined" ? navigator.userAgent : "",
       },
       ...basic_info,

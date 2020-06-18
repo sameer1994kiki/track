@@ -33,13 +33,13 @@ export default class Track {
         });
       });
 
-      window.addEventListener("error", (event) => {
-        this.tcFnc({
-          name: `${this.config.project || ""}-error`,
-          extra: { event },
-          type: "click",
-        });
-      });
+      // window.addEventListener("error", (event) => {
+      //   this.tcFnc({
+      //     name: `${this.config.project || ""}-error`,
+      //     extra: { event },
+      //     type: "click",
+      //   });
+      // });
     }
   }
 
@@ -190,8 +190,7 @@ export default class Track {
     const cookieParams = cookieData === true ? this.getCookieParams() : {};
     data.basic_info = {
       ...{
-        "user_agent":
-          typeof navigator !== "undefined" ? navigator.userAgent : "",
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       },
       ...basic_info,
       ...cookieParams,

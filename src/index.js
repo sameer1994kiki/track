@@ -214,11 +214,12 @@ export default class Track {
           newData.event_id = `${this.connfig.project}_error_track_data`;
           this.postTrackDataAgain(url, newData);
         }
+        if (track.cb) {
+          track.cb();
+        }
       })
       .catch(() => {
         this.clearTrackData();
-      })
-      .finally(() => {
         if (track.cb) {
           track.cb();
         }
@@ -231,9 +232,13 @@ export default class Track {
       method: "post",
       url,
       data,
-    }).finally(() => {
-      this.clearTrackData();
-    });
+    })
+      .then(() => {
+        this.clearTrackData();
+      })
+      .catch(() => {
+        this.clearTrackData();
+      });
   }
   clearTrackData() {
     this.trackList = [];

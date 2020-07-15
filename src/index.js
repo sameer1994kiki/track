@@ -170,8 +170,11 @@ export default class Track {
     if (log) {
       console.log(this.trackList);
     }
-    if (this.trackList.length >= threshold || track.immediate === true)
+    if (this.trackList.length >= threshold || track.immediate === true) {
+      this.trackListData = { ...this.trackList };
+      this.clearTrackData();
       this.postTrackData(track);
+    }
   }
 
   // 上传数据
@@ -196,7 +199,7 @@ export default class Track {
       ...cookieParams,
       ...initBasic,
     };
-    data.event_list = this.trackList;
+    data.event_list = this.trackListData;
     data.version = version;
     // 请求数据是否可以压缩一下
     instance({
@@ -205,13 +208,19 @@ export default class Track {
       data,
     })
       .then((response) => {
-        if (response.status === 200 && response.data.code === 0) {
-          this.clearTrackData();
-        } else {
+        if (!(response.status === 200 && response.data.code === 0)) {
           //  上报失败重新上报，并统计失败数量
           this.postTrackDataAgain(url, data);
           const newData = { ...data };
-          newData.event_id = `${this.connfig.project}_error_track_data`;
+          newData.event_list = [
+            {
+              event_id: `${this.connfig.project}_error_track_data`,
+              client_time: +new Date(),
+              event_category: "type",
+              referrer: this.referrer,
+              location: this.isBrower() ? document.location.pathname : "",
+            },
+          ];
           this.postTrackDataAgain(url, newData);
         }
         if (track.cb) {
@@ -232,13 +241,7 @@ export default class Track {
       method: "post",
       url,
       data,
-    })
-      .then(() => {
-        this.clearTrackData();
-      })
-      .catch(() => {
-        this.clearTrackData();
-      });
+    });
   }
   clearTrackData() {
     this.trackList = [];

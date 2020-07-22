@@ -19,8 +19,18 @@ export default class Track {
 
   init(params = {}) {
     this.config = this.deepObjectMerge(this.config, params);
+    this.initLocationData();
     this.domEvent();
     this.unload();
+  }
+
+  initLocationData() {
+    if (typeof localStorage === "object") {
+      localStorage.setItem("track_location", "");
+      localStorage.setItem("track_referrer", "");
+      localStorage.setItem("track_timer", "");
+      localStorage.setItem("track_page", "");
+    }
   }
   unload() {
     const isBrower = this.isBrower();
